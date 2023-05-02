@@ -1,0 +1,113 @@
+
+```{r}
+library(ArchR)
+set.seed(1)
+
+
+# PARAMETERS
+n_threads <- 1
+data_dir <- "frags"
+inputFiles <- c(sprintf("%s/lymph_node_lymphoma_14k_atac_fragments.tsv.gz", data_dir))
+proj_name <- "atac"
+```
+
+```{r}
+setwd("/Users/josepomarino/Desktop/Comp_Genomics/Project")
+```
+
+```{r}
+addArchRThreads(threads = 1) 
+addArchRGenome('hg38')
+names(inputFiles) <- c('BCL')
+```
+
+```{r}
+ArrowFiles <- createArrowFiles(
+  inputFiles = inputFiles,
+  sampleNames = names(inputFiles),
+  minTSS = 1, #Dont set this too high because you can always increase later
+  minFrags =2900, 
+  addTileMat = TRUE,
+  addGeneScoreMat = FALSE,
+  excludeChr = c('chrM')
+)
+```
+
+```{r}
+proj <- ArchRProject(
+  ArrowFiles = ArrowFiles, 
+  outputDirectory = proj_name,
+  copyArrows = FALSE
+)
+```
+
+```{r}
+# SVD, Clustering, UMAP
+proj <- addIterativeLSI(ArchRProj = proj, useMatrix = "TileMatrix", 
+                       name = "IterativeLSI", force=TRUE)
+```
+
+```{r}
+# GEne scores with selected features
+# Artificial black list to exclude all non variable features
+chrs <- getChromSizes(proj)
+var_features <- proj@reducedDims[["IterativeLSI"]]$LSIFeatures
+var_features_gr <- GRanges(var_features$seqnames, IRanges(var_features$start, var_features$start + 500))
+blacklist <- setdiff(chrs, var_features_gr)
+proj <- addGeneScoreMatrix(proj, matrixName='GeneScoreMatrix', force=TRUE, blacklist=blacklist)
+```
+
+```{r}
+# Peaks using NFR fragments
+proj <- addClusters(input = proj, reducedDims = "IterativeLSI")
+proj <- addGroupCoverages(proj)
+proj <- addReproduciblePeakSet(proj,
+                               pathToMacs = "/Users/josepomarino/anaconda3/envs/myenv/bin/macs3")
+# Counts
+proj <- addPeakMatrix(proj, ceiling=10^9)
+
+# Save 
+proj <- saveArchRProject(ArchRProj = proj)
+```
+
+```{r}
+dir.create(sprintf("%s/export", proj_name))
+write.csv(getReducedDims(proj), sprintf('%s/export/svd.csv', proj_name), quote=FALSE)
+write.csv(getCellColData(proj), sprintf('%s/export/cell_metadata.csv', proj_name), quote=FALSE)
+```
+
+```{r}
+# Gene scores
+gene.scores <- getMatrixFromProject(proj)
+scores <- assays(gene.scores)[['GeneScoreMatrix']]
+scores <- as.matrix(scores)
+rownames(scores) <- rowData(gene.scores)$name
+write.csv(scores, sprintf('%s/export/gene_scores.csv', proj_name), quote=FALSE)
+```
+
+```{r}
+# Peak counts
+peaks <- getPeakSet(proj)
+peak.counts <- getMatrixFromProject(proj, 'PeakMatrix')
+```
+
+```{r}
+# Reorder peaks 
+# Chromosome order
+chr_order <- sort(seqlevels(peaks))
+reordered_features <- list()
+for(chr in chr_order)
+    reordered_features[[chr]] = peaks[seqnames(peaks) == chr]
+reordered_features <- Reduce("c", reordered_features) 
+```
+
+```{r}
+# Export counts
+dir.create(sprintf("%s/export/peak_counts", proj_name))
+counts <- assays(peak.counts)[['PeakMatrix']]
+writeMM(counts, sprintf('%s/export/peak_counts/counts.mtx', proj_name))
+write.csv(colnames(peak.counts), sprintf('%s/export/peak_counts/cells.csv', proj_name), quote=FALSE)
+names(reordered_features) <- sprintf("Peak%d", 1:length(reordered_features))
+write.csv(as.data.frame(reordered_features), sprintf('%s/export/peak_counts/peaks.csv', proj_name), quote=FALSE)
+```
+
