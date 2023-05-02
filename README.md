@@ -1,4 +1,7 @@
-# genomics-project
+# Single-Cell RNA+ATACseq Analysis of B-Cell Lymphoma with SEACells
+
+#### Motivation
+B cell lymphomas are largely determined by the interplay between gene expression and chromatin accessibility. We seek to use SEACells in our BCL dataset to find regulatory elements in tumor B-cells
 
 #### Dependencies
 * SEACells (requires Python3.8 or above)
