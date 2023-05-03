@@ -14,9 +14,9 @@ B cell lymphomas are largely determined by the interplay between gene expression
 
 #### Notebook Descriptions
 * ArchR.Rmd
-  - Description of file
+  - Preprocess scATAC-seq data and export h5 file for further analysis
 * Unfiltered_RNA_to_Joint.ipynb
-  - Description of file
+  - Subset scRNA-seq dataset, basic preprocessing and exploratory data analysis, differential gene expression analysis, and cell type annotations.
 * ATACMetacellsAnalysis.ipynb
   - Compute metacells for the ATAC data using SEACells
 * Final_SEACell_ATAC_RNA_Integration.ipynb
@@ -26,5 +26,6 @@ B cell lymphomas are largely determined by the interplay between gene expression
 
 #### Data
 * Links to any data files required to run our notebooks (including data files we created) can be found in the notebooks
-* The dataset studied in this project is the Fresh Frozen Lymph Node with B-cell Lymphoma dataset from 10x Genomics
-  - Name of file: https://www.10xgenomics.com/resources/datasets/fresh-frozen-lymph-node-with-b-cell-lymphoma-14-k-sorted-nuclei-1-standard-2-0-0
+* The dataset studied in this project is the Fresh Frozen Lymph Node with B-cell Lymphoma dataset from 10x Genomics (link: https://www.10xgenomics.com/resources/datasets/fresh-frozen-lymph-node-with-b-cell-lymphoma-14-k-sorted-nuclei-1-standard-2-0-0)
+  - RNA dataset download name: Raw feature barcode matrix (HDF5)
+  - ATAC dataset download name: ATAC Per fragment information file (TSV.GZ)
