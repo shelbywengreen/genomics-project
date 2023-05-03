@@ -14,7 +14,7 @@ B cell lymphomas are largely determined by the interplay between gene expression
 
 #### Notebook Descriptions
 * ArchR.Rmd
-  - Preprocess scATAC-seq data and export h5 file for further analysis
+  - Preprocess scATAC-seq data and export peak counts matrix and metadata for analysis in Python
 * Unfiltered_RNA_to_Joint.ipynb
   - Subset scRNA-seq dataset, basic preprocessing and exploratory data analysis, differential gene expression analysis, and cell type annotations.
 * ATACMetacellsAnalysis.ipynb
